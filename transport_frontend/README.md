@@ -7,15 +7,19 @@ Landing page for `Trust Drive India`, built with React, TypeScript, and Vite.
 Create a `.env` file in the project root and add:
 
 ```bash
-VITE_CONTACT_NUMBER=+919000000000
+VITE_PHONE_DIAL_NUMBER=+919000000000
+VITE_WHATSAPP_NUMBER=+919111111111
 ```
 
-This number is used for:
+These numbers are used for:
 
-- `Call now` dial links
-- `WhatsApp` launcher with a pre-generated booking message
+- `Call now` dial links from `VITE_PHONE_DIAL_NUMBER`
+- `WhatsApp` launcher from `VITE_WHATSAPP_NUMBER`
 
-If no environment value is set, the UI falls back to a placeholder number.
+Backward compatibility:
+
+- `VITE_CONTACT_NUMBER` still works as a shared fallback if you want to use one number for both.
+- If nothing is set, the UI falls back to a placeholder number.
 
 ## Run the Project
 
