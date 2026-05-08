@@ -802,7 +802,7 @@ function SiteFooter({
               <span>trustdriveindia5@gmail.com</span>
             </a>
           </div>
-          <p className="footer-section-title">Follow Us</p>
+          <p className="footer-section-title">Follow us</p>
           <a
             className="footer-social-link"
             // href="https://www.instagram.com/trustdriveindia/"
