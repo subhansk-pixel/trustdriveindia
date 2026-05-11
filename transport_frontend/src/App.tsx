@@ -803,9 +803,9 @@ function SiteFooter({
             </a>
           </div>
           <p className="footer-section-title">Follow us</p>
-          <a
-            className="footer-social-link"
-            // href="https://www.instagram.com/trustdriveindia/"
+
+          <a className="footer-social-link"
+            href="https://www.instagram.com/trust.driveindia"
             target="_blank"
             rel="noreferrer"
           >
@@ -814,7 +814,7 @@ function SiteFooter({
 
           <a
             className="footer-social-link"
-            // href="https://www.instagram.com/trustdriveindia/"
+            // href="https://www.facebook.com/trust.driveindia"
             target="_blank"
             rel="noreferrer"
           >
