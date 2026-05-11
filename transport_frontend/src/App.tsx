@@ -21,6 +21,13 @@ type LegalDocument = {
   sections: LegalSection[];
 };
 
+type SeoMeta = {
+  title: string;
+  description: string;
+  keywords: string;
+  canonicalPath: string;
+};
+
 const services = [
   {
     id: "airport-pickup",
@@ -146,10 +153,46 @@ const whatsappMessage = encodeURIComponent(
 );
 const callHref = `tel:${dialNumber}`;
 const whatsappHref = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
+const emailAddress =
+  import.meta.env.VITE_CONTACT_EMAIL?.trim() || "trustdriveindia5@gmail.com";
+const emailHref = `mailto:${emailAddress}`;
+const instagramUrl =
+  import.meta.env.VITE_INSTAGRAM_URL?.trim() ||
+  "https://www.instagram.com/trust.driveindia";
+const facebookUrl = import.meta.env.VITE_FACEBOOK_URL?.trim() || "";
+const linkedinUrl = import.meta.env.VITE_LINKEDIN_URL?.trim() || "";
 const createServiceWhatsappHref = (serviceTitle: string) =>
   `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
     `Hello Trust Drive India, I need ${serviceTitle} service in Hyderabad. Please share availability and pricing.`,
   )}`;
+
+const seoMetaByRoute: Record<RouteKey, SeoMeta> = {
+  home: {
+    title:
+      "Driver Service in Hyderabad | Chauffeur, Airport Pickup, Taxi Support | Trust Drive India",
+    description:
+      "Book driver service in Hyderabad for airport pickup, chauffeur hire, valet parking, family trips, and taxi support. Trusted local drivers with quick WhatsApp booking.",
+    keywords:
+      "driver service Hyderabad, chauffeur service Hyderabad, airport pickup Hyderabad, taxi service Hyderabad, car rental with driver Hyderabad, valet parking Hyderabad, temporary driver Hyderabad, permanent driver Hyderabad",
+    canonicalPath: "/",
+  },
+  refund: {
+    title: "Refund Policy | Trust Drive India",
+    description:
+      "Read the refund policy for Trust Drive India bookings, cancellations, advance payments, rescheduling, and service-related refund timelines.",
+    keywords:
+      "refund policy Trust Drive India, driver service refund, booking cancellation Hyderabad",
+    canonicalPath: "/refund-policy",
+  },
+  terms: {
+    title: "Terms and Conditions | Trust Drive India",
+    description:
+      "Read the terms and conditions for Trust Drive India chauffeur, taxi support, airport pickup, valet, and booking services.",
+    keywords:
+      "terms and conditions Trust Drive India, chauffeur service terms, driver service Hyderabad terms",
+    canonicalPath: "/terms-and-conditions",
+  },
+};
 
 const legalContent: Record<Exclude<RouteKey, "home">, LegalDocument> = {
   refund: {
@@ -293,6 +336,102 @@ const getRouteFromPath = (pathname: string): RouteKey => {
   return "home";
 };
 
+const upsertMetaTag = (
+  attribute: "name" | "property",
+  key: string,
+  content: string,
+) => {
+  let tag = document.head.querySelector<HTMLMetaElement>(
+    `meta[${attribute}="${key}"]`,
+  );
+
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attribute, key);
+    document.head.appendChild(tag);
+  }
+
+  tag.setAttribute("content", content);
+};
+
+const upsertLinkTag = (rel: string, href: string) => {
+  let tag = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+
+  if (!tag) {
+    tag = document.createElement("link");
+    tag.setAttribute("rel", rel);
+    document.head.appendChild(tag);
+  }
+
+  tag.setAttribute("href", href);
+};
+
+const updateStructuredData = (route: RouteKey) => {
+  const scriptId = "trust-drive-india-structured-data";
+  const canonicalUrl = `${window.location.origin}${seoMetaByRoute[route].canonicalPath}`;
+  const sameAsLinks = [instagramUrl, facebookUrl, linkedinUrl].filter(Boolean);
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": `${window.location.origin}/#business`,
+        name: "Trust Drive India",
+        url: window.location.origin,
+        telephone: rawPhoneNumber,
+        email: emailAddress,
+        areaServed: "Hyderabad",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Hyderabad",
+          addressRegion: "Telangana",
+          addressCountry: "IN",
+        },
+        sameAs: sameAsLinks,
+        description:
+          "Driver service in Hyderabad for airport pickup, chauffeur support, valet parking, family travel, and local taxi assistance.",
+      },
+      {
+        "@type": "Service",
+        "@id": `${window.location.origin}/#service`,
+        serviceType: "Driver and chauffeur service",
+        areaServed: "Hyderabad",
+        provider: {
+          "@id": `${window.location.origin}/#business`,
+        },
+        description:
+          "Airport pickup, temporary driver, permanent driver, valet parking, family trip drivers, and event chauffeur support in Hyderabad.",
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${window.location.origin}/#website`,
+        url: window.location.origin,
+        name: "Trust Drive India",
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        url: canonicalUrl,
+        name: seoMetaByRoute[route].title,
+        description: seoMetaByRoute[route].description,
+        isPartOf: {
+          "@id": `${window.location.origin}/#website`,
+        },
+      },
+    ],
+  };
+  const existingScript = document.getElementById(scriptId);
+  const script = existingScript || document.createElement("script");
+
+  script.id = scriptId;
+  script.setAttribute("type", "application/ld+json");
+  script.textContent = JSON.stringify(structuredData);
+
+  if (!existingScript) {
+    document.head.appendChild(script);
+  }
+};
+
 function App() {
   const [openServiceId, setOpenServiceId] = useState<string | null>(
     services[0]?.id ?? null,
@@ -333,10 +472,28 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.title =
-      route === "home"
-        ? "Trust Drive India"
-        : `${legalContent[route].badge} | Trust Drive India`;
+    const meta = seoMetaByRoute[route];
+    const canonicalUrl = `${window.location.origin}${meta.canonicalPath}`;
+
+    document.title = meta.title;
+    upsertMetaTag("name", "description", meta.description);
+    upsertMetaTag("name", "keywords", meta.keywords);
+    upsertMetaTag("name", "robots", "index, follow");
+    upsertMetaTag("name", "author", "Trust Drive India");
+    upsertMetaTag("property", "og:title", meta.title);
+    upsertMetaTag("property", "og:description", meta.description);
+    upsertMetaTag(
+      "property",
+      "og:type",
+      route === "home" ? "website" : "article",
+    );
+    upsertMetaTag("property", "og:url", canonicalUrl);
+    upsertMetaTag("property", "og:site_name", "Trust Drive India");
+    upsertMetaTag("name", "twitter:card", "summary_large_image");
+    upsertMetaTag("name", "twitter:title", meta.title);
+    upsertMetaTag("name", "twitter:description", meta.description);
+    upsertLinkTag("canonical", canonicalUrl);
+    updateStructuredData(route);
   }, [route]);
 
   return route === "home" ? (
@@ -428,9 +585,14 @@ function HomePage({
             <div className="hero-content-card">
               <p className="hero-badge">Hyderabad driver service</p>
               <p className="hero-tag">{heroSlides[activeSlide].eyebrow}</p>
-              <h2>{heroSlides[activeSlide].title}</h2>
+              <h1>{heroSlides[activeSlide].title}</h1>
               <p className="hero-trust-row">
                 4.8 rated · 15+ years experience · 400+ driver partners
+              </p>
+              <p className="hero-text">
+                Book trusted driver service in Hyderabad for airport pickup,
+                chauffeur support, family travel, valet parking, and local taxi
+                assistance with quick WhatsApp booking.
               </p>
 
               <div className="hero-bottom-row">
@@ -580,6 +742,39 @@ function HomePage({
             <article className="trust-card">
               <h4>Easy contact</h4>
               <p>Call or WhatsApp directly with one tap on mobile.</p>
+            </article>
+          </div>
+        </section>
+
+        <section className="seo-section">
+          <div className="section-heading">
+            <p className="eyebrow">Popular Searches</p>
+            <h3>Driver, chauffeur, airport pickup, and taxi support</h3>
+          </div>
+          <div className="seo-grid">
+            <article className="seo-card">
+              <h4>Driver service in Hyderabad</h4>
+              <p>
+                Customers searching for a driver in Hyderabad can book airport
+                travel, office commute help, event support, and family trip
+                driving with quick response and local coverage.
+              </p>
+            </article>
+            <article className="seo-card">
+              <h4>Chauffeur, taxi, and car with driver</h4>
+              <p>
+                For searches around chauffeur service, taxi support, and car
+                rental with driver, Trust Drive India helps with premium guest
+                movement, daily bookings, and flexible trip planning.
+              </p>
+            </article>
+            <article className="seo-card">
+              <h4>Airport pickup and travel bookings</h4>
+              <p>
+                We support airport pickup, valet parking, temporary drivers,
+                permanent drivers, family vacation drivers, and VIP pickup
+                requirements across Hyderabad.
+              </p>
             </article>
           </div>
         </section>
@@ -792,42 +987,50 @@ function SiteFooter({
               <BsWhatsapp />
               <span>{rawWhatsappNumber}</span>
             </a>
-                      <a
+            <a
               className="footer-contact-link"
-              // href={whatsappHref}
+              href={emailHref}
               target="_blank"
               rel="noreferrer"
             >
-              <MdEmail/>
-              <span>trustdriveindia5@gmail.com</span>
+              <MdEmail />
+              <span>{emailAddress}</span>
             </a>
           </div>
           <p className="footer-section-title">Follow us</p>
 
-          <a className="footer-social-link"
-            href="https://www.instagram.com/trust.driveindia"
+          <a
+            className="footer-social-link"
+            href={instagramUrl}
             target="_blank"
             rel="noreferrer"
           >
             <ImInstagram />
+            <span>Instagram</span>
           </a>
 
-          <a
-            className="footer-social-link"
-            // href="https://www.facebook.com/trust.driveindia"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <FaFacebook />
-          </a>
-          <a
-            className="footer-social-link"
-            // href="https://www.instagram.com/trustdriveindia/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <LiaLinkedin />
-          </a>
+          {facebookUrl ? (
+            <a
+              className="footer-social-link"
+              href={facebookUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <FaFacebook />
+              <span>Facebook</span>
+            </a>
+          ) : null}
+          {linkedinUrl ? (
+            <a
+              className="footer-social-link"
+              href={linkedinUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <LiaLinkedin />
+              <span>LinkedIn</span>
+            </a>
+          ) : null}
         </div>
 
         <div className="footer-column">
