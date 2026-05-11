@@ -192,9 +192,7 @@ const seoMetaByRoute: Record<RouteKey, SeoMeta> = {
       "terms and conditions Trust Drive India, chauffeur service terms, driver service Hyderabad terms",
     canonicalPath: "/terms-and-conditions",
   },
-};
-
-const legalContent: Record<Exclude<RouteKey, "home">, LegalDocument> = {
+}; const legalContent: Record<Exclude<RouteKey, "home">, LegalDocument> = {
   refund: {
     badge: "Refund Policy",
     title: "Refund and cancellation terms for bookings",
