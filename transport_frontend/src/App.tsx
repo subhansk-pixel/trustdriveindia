@@ -134,6 +134,40 @@ const reviews = [
   },
 ];
 
+const serviceAreas = [
+  "Banjara Hills",
+  "Jubilee Hills",
+  "Madhapur",
+  "Gachibowli",
+  "Hitech City",
+  "Kukatpally",
+  "Secunderabad",
+  "Shamshabad Airport",
+];
+
+const faqItems = [
+  {
+    question: "Do you provide driver service in Hyderabad for airport pickup?",
+    answer:
+      "Yes, Trust Drive India provides airport pickup and drop driver support in Hyderabad, including early morning, late night, and guest travel bookings.",
+  },
+  {
+    question: "Can I book a temporary or permanent driver?",
+    answer:
+      "Yes, you can book temporary drivers for a few hours or a day, and you can also enquire about permanent driver arrangements for daily travel needs.",
+  },
+  {
+    question: "Do you support chauffeur, taxi, and family trip bookings?",
+    answer:
+      "Yes, we support chauffeur-style travel help, local taxi assistance, family trip planning, VIP pickups, and event driver bookings based on availability.",
+  },
+  {
+    question: "How do I book quickly?",
+    answer:
+      "The fastest way is to call directly or send your trip details on WhatsApp so the team can confirm availability, timing, and pricing.",
+  },
+];
+
 const fallbackProfileLogo =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='32' fill='%23e8dfd2'/%3E%3Ccircle cx='32' cy='24' r='11' fill='%23145c5d' opacity='0.9'/%3E%3Cpath d='M16 52c2.8-9 10.1-14 16-14s13.2 5 16 14' fill='%23145c5d' opacity='0.9'/%3E%3C/svg%3E";
 
@@ -192,7 +226,9 @@ const seoMetaByRoute: Record<RouteKey, SeoMeta> = {
       "terms and conditions Trust Drive India, chauffeur service terms, driver service Hyderabad terms",
     canonicalPath: "/terms-and-conditions",
   },
-}; const legalContent: Record<Exclude<RouteKey, "home">, LegalDocument> = {
+};
+
+const legalContent: Record<Exclude<RouteKey, "home">, LegalDocument> = {
   refund: {
     badge: "Refund Policy",
     title: "Refund and cancellation terms for bookings",
@@ -368,55 +404,72 @@ const updateStructuredData = (route: RouteKey) => {
   const scriptId = "trust-drive-india-structured-data";
   const canonicalUrl = `${window.location.origin}${seoMetaByRoute[route].canonicalPath}`;
   const sameAsLinks = [instagramUrl, facebookUrl, linkedinUrl].filter(Boolean);
+  const graph: Array<Record<string, unknown>> = [
+    {
+      "@type": "LocalBusiness",
+      "@id": `${window.location.origin}/#business`,
+      name: "Trust Drive India",
+      url: window.location.origin,
+      telephone: rawPhoneNumber,
+      email: emailAddress,
+      areaServed: "Hyderabad",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Hyderabad",
+        addressRegion: "Telangana",
+        addressCountry: "IN",
+      },
+      sameAs: sameAsLinks,
+      description:
+        "Driver service in Hyderabad for airport pickup, chauffeur support, valet parking, family travel, and local taxi assistance.",
+    },
+    {
+      "@type": "Service",
+      "@id": `${window.location.origin}/#service`,
+      serviceType: "Driver and chauffeur service",
+      areaServed: "Hyderabad",
+      provider: {
+        "@id": `${window.location.origin}/#business`,
+      },
+      description:
+        "Airport pickup, temporary driver, permanent driver, valet parking, family trip drivers, and event chauffeur support in Hyderabad.",
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${window.location.origin}/#website`,
+      url: window.location.origin,
+      name: "Trust Drive India",
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${canonicalUrl}#webpage`,
+      url: canonicalUrl,
+      name: seoMetaByRoute[route].title,
+      description: seoMetaByRoute[route].description,
+      isPartOf: {
+        "@id": `${window.location.origin}/#website`,
+      },
+    },
+  ];
+
+  if (route === "home") {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${window.location.origin}/#faq`,
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    });
+  }
+
   const structuredData = {
     "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "LocalBusiness",
-        "@id": `${window.location.origin}/#business`,
-        name: "Trust Drive India",
-        url: window.location.origin,
-        telephone: rawPhoneNumber,
-        email: emailAddress,
-        areaServed: "Hyderabad",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Hyderabad",
-          addressRegion: "Telangana",
-          addressCountry: "IN",
-        },
-        sameAs: sameAsLinks,
-        description:
-          "Driver service in Hyderabad for airport pickup, chauffeur support, valet parking, family travel, and local taxi assistance.",
-      },
-      {
-        "@type": "Service",
-        "@id": `${window.location.origin}/#service`,
-        serviceType: "Driver and chauffeur service",
-        areaServed: "Hyderabad",
-        provider: {
-          "@id": `${window.location.origin}/#business`,
-        },
-        description:
-          "Airport pickup, temporary driver, permanent driver, valet parking, family trip drivers, and event chauffeur support in Hyderabad.",
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${window.location.origin}/#website`,
-        url: window.location.origin,
-        name: "Trust Drive India",
-      },
-      {
-        "@type": "WebPage",
-        "@id": `${canonicalUrl}#webpage`,
-        url: canonicalUrl,
-        name: seoMetaByRoute[route].title,
-        description: seoMetaByRoute[route].description,
-        isPartOf: {
-          "@id": `${window.location.origin}/#website`,
-        },
-      },
-    ],
+    "@graph": graph,
   };
   const existingScript = document.getElementById(scriptId);
   const script = existingScript || document.createElement("script");
@@ -774,6 +827,40 @@ function HomePage({
                 requirements across Hyderabad.
               </p>
             </article>
+          </div>
+        </section>
+
+        <section className="areas-section">
+          <div className="section-heading">
+            <p className="eyebrow">Service Areas</p>
+            <h3>Popular Hyderabad areas we support</h3>
+          </div>
+          <div className="areas-pill-grid">
+            {serviceAreas.map((area) => (
+              <span className="area-pill" key={area}>
+                {area}
+              </span>
+            ))}
+          </div>
+          <p className="areas-copy">
+            Book local driver service, airport pickup, chauffeur help, and
+            family travel support across major Hyderabad residential, business,
+            and airport zones.
+          </p>
+        </section>
+
+        <section className="faq-section">
+          <div className="section-heading">
+            <p className="eyebrow">FAQs</p>
+            <h3>Common questions about driver bookings</h3>
+          </div>
+          <div className="faq-grid">
+            {faqItems.map((item) => (
+              <article className="faq-card" key={item.question}>
+                <h4>{item.question}</h4>
+                <p>{item.answer}</p>
+              </article>
+            ))}
           </div>
         </section>
 

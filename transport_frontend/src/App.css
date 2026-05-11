@@ -89,6 +89,8 @@
 .services-section,
 .trust-section,
 .seo-section,
+.areas-section,
+.faq-section,
 .reviews-section {
   border: 1px solid var(--border);
   border-radius: 28px;
@@ -455,6 +457,50 @@
   color: var(--muted);
 }
 
+.areas-section,
+.faq-section {
+  padding: 28px;
+}
+
+.areas-pill-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.area-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 15px;
+  border-radius: 999px;
+  background: rgba(20, 92, 93, 0.08);
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.areas-copy {
+  margin-top: 16px;
+  max-width: 60ch;
+  color: var(--muted);
+}
+
+.faq-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.faq-card {
+  padding: 20px;
+  border: 1px solid rgba(20, 92, 93, 0.1);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.faq-card p {
+  color: var(--muted);
+}
+
 .review-text {
   color: var(--text-strong);
   margin-top: 16px;
@@ -813,6 +859,8 @@
   .services-section,
   .trust-section,
   .seo-section,
+  .areas-section,
+  .faq-section,
   .reviews-section {
     padding: 22px;
     border-radius: 24px;
@@ -821,6 +869,7 @@
   .services-summary-grid,
   .trust-grid,
   .seo-grid,
+  .faq-grid,
   .reviews-grid {
     grid-template-columns: 1fr;
   }
